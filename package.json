@@ -1,0 +1,19 @@
+{
+  "name": "com.quickvr.quicklod",
+  "version": "1.0.0",
+  "displayName": "QuickVR.QuickLOD",
+  "description": "LOD system extending the functionalities of Simplygon",
+  "unity": "2019.1",
+  "keywords": [
+    "LOD",
+    "Simplygon",
+    "mesh",
+	"reduction"
+  ],
+  "author": {
+    "name": "EventLab",
+    "email": "eventlab.projects@gmail.com",
+    "url": "http://www.event-lab.org/"
+  }
+  
+}

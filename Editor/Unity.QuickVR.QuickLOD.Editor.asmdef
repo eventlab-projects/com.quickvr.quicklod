@@ -1,0 +1,21 @@
+{
+    "name": "QuickLODEditor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:4d503c4eb8231b94986265dc290ce927",
+        "GUID:fbb89535e17e84eae8079c2158650d01",
+        "GUID:e31ceb1e0618b432f826d902eeb8e779",
+        "GUID:0f9e8f73c69964f1e8176f9a0b86f9b2"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
