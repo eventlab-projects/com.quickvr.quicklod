@@ -4,6 +4,9 @@
   "displayName": "QuickVR.QuickLOD",
   "description": "LOD system extending the functionalities of Simplygon",
   "unity": "2019.1",
+  "dependencies": {
+    "com.unity.formats.usd": "3.0.0-exp.2"
+  },
   "keywords": [
     "LOD",
     "Simplygon",
