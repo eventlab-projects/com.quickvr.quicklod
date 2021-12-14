@@ -2,7 +2,7 @@
 
 __QuickLOD__ is a LOD pipeline that works on top of __Simplygon__, adding two main functionalities: 
 
-1) Given a __Unity GameObject__, it allows to determine a specific reduction factor for each of the __Renderers__ that it contains. 
+1) Given a _Unity GameObject_, it allows to determine a specific reduction factor for each of the _Renderers_ that it contains. 
 2) If the original mesh has blendshapes, those are transfered to the simplified mesh. 
 
 This work is funded by the European Research Council (ERC) Advanced Grant Moments in Time in Immersive Virtual Environments (MoTIVE) 742989.
