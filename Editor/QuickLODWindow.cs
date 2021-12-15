@@ -229,6 +229,7 @@ namespace QuickVR.QuickLOD
                     EditorGUI.indentLevel++;
                     rGroup._name = EditorGUILayout.TextField("Name", rGroup._name);
                     rGroup._atlasResolution = EditorGUILayout.IntField("Atlas Resolution", rGroup._atlasResolution);
+                    rGroup._mergeGeometries = EditorGUILayout.Toggle("Merge Geometries", rGroup._mergeGeometries);
 
                     EditorGUILayout.BeginHorizontal();
                     rGroup._showRenderers = EditorGUILayout.Foldout(rGroup._showRenderers, "Renderers");

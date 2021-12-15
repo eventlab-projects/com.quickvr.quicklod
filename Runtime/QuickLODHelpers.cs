@@ -430,6 +430,7 @@ namespace QuickVR.QuickLOD
         public string _name;
         public List<Renderer> _renderers = new List<Renderer>();
         public int _atlasResolution = 1024;  //The resolution of the atlas for the RenderGroup
+        public bool _mergeGeometries = true;
 
         public virtual bool IsSkinned()
         {
