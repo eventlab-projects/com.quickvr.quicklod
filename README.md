@@ -29,5 +29,5 @@ Done! Follow the documentation on the wiki to learn how to use QuickLOD.
 
 # Known Issues 
 
-It looks like newest __Simplygon__ version does not work with USD v3.0.0-exp-2. So USD package (com.unity.formats.usd) must be at version 3.0.0-exp.1 at much. 
+It looks like newest __Simplygon__ version does not work with USD v3.0.0-exp-2. So USD package (com.unity.formats.usd) must be at version __3.0.0-exp.1__ at much. 
 
