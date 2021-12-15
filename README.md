@@ -27,3 +27,7 @@ __Now be patient__. Sometimes it seems that Unity does not produce any kind of v
 
 Done! Follow the documentation on the wiki to learn how to use QuickLOD. 
 
+# Known Issues 
+
+It looks like newest __Simplygon__ version does not work with USD v3.0.0-exp-2. So USD package (com.unity.formats.usd) must be at version 3.0.0-exp.1 at much. 
+
