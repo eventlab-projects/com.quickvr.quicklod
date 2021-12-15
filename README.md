@@ -9,7 +9,7 @@ This work is funded by the European Research Council (ERC) Advanced Grant Moment
 
 # Install
 
-First of all you need to install __Simplygon__ in your Unity project. Follow the official instructions here:
+First of all you need to install __Simplygon__ in your Unity project. You can find the official instructions in the following links:
 
 https://www.youtube.com/watch?v=gy7eHl0cpg4
 
