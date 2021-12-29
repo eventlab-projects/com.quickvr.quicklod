@@ -478,4 +478,62 @@ namespace QuickVR.QuickLOD
         }
     }
 
+    public class QuickComparerVector3 : IComparer<Vector3>
+    {
+
+        public int Compare(Vector3 v1, Vector3 v2)
+        {
+            if (!Mathf.Approximately(v1.x, v2.x)) return v1.x > v2.x ? 1 : -1;
+            if (!Mathf.Approximately(v1.y, v2.y)) return v1.y > v2.y ? 1 : -1;
+            if (!Mathf.Approximately(v1.z, v2.z)) return v1.z > v2.z ? 1 : -1;
+
+            return 0;
+        }
+
+        public static int FindVector3(Vector3[] array, Vector3 value)
+        {
+            int result = System.Array.BinarySearch(array, value, new QuickComparerVector3());
+
+            //The index of the specified value in the specified array, if value is found; otherwise, a negative number.
+
+            //If value is not found and value is less than one or more elements in array, the negative number returned 
+            //is the bitwise complement of the index of the first element that is larger than value.
+
+            //If value is not found and value is greater than all elements in array, the negative number returned
+            //is the bitwise complement of(the index of the last element plus 1). 
+
+            if (result < 0)
+            {
+                int next = ~result;
+                if (next == array.Length)
+                {
+                    result = array.Length - 1;
+                }
+                else
+                {
+                    int prev = next > 0 ? next - 1 : 0;
+
+                    if (Vector3.SqrMagnitude(value - array[prev]) < Vector3.SqrMagnitude(value - array[next]))
+                    {
+                        result = prev;
+                    }
+                    else
+                    {
+                        result = next;
+                    }
+                }
+            }
+
+            //Check if the selected vertex is close enough to our value
+            //if (Vector3.SqrMagnitude(value - array[result]) > 0.001f)
+            if (Vector3.Distance(value, array[result]) > 0.001f)
+            {
+                result = -1;
+            }
+
+            return result;
+        }
+
+    }
+
 }

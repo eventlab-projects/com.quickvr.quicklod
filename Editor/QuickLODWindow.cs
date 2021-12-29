@@ -137,6 +137,68 @@ namespace QuickVR.QuickLOD
                     _simplifier.Simplify(_target, _reductionFactor, renderGroups);
                 }
 
+                if (QuickLODUtilsEditor.DrawButton("Test"))
+                {
+                    foreach (Renderer r in _freeRenderers)
+                    {
+                        _simplifier.TestComputeTriangleTextureMap(r.GetMesh());
+                    }
+                }
+
+                if (QuickLODUtilsEditor.DrawButton("TestBakeMesh"))
+                {
+                    foreach (SkinnedMeshRenderer r in _target.GetComponentsInChildren<SkinnedMeshRenderer>())
+                    {
+                        //Mesh m = new Mesh();
+                        //r.BakeMesh(m, true);
+
+                        //SkinnedMeshRenderer tmp = Instantiate(r);
+                        //tmp.transform.parent = r.transform.parent;
+                        //tmp.transform.localPosition = r.transform.localPosition;
+                        //tmp.transform.localRotation = r.transform.localRotation;
+                        //tmp.transform.localScale = r.transform.localScale;
+
+                        //List<Matrix4x4> bindPoses = new List<Matrix4x4>();
+                        //foreach (Transform tBone in tmp.bones)
+                        //{
+                        //    bindPoses.Add(tBone.worldToLocalMatrix * tmp.transform.localToWorldMatrix);
+                        //}
+                        //m.bindposes = bindPoses.ToArray();
+                        //m.boneWeights = tmp.GetMesh().boneWeights;
+                        //Debug.Log(m.boneWeights.Length);
+
+                        //tmp.SetMesh(m);
+
+                        Mesh m = new Mesh();
+                        r.BakeMesh(m);
+
+                        SkinnedMeshRenderer tmp = Instantiate(r);
+                        tmp.transform.parent = r.transform.parent;
+                        tmp.transform.localPosition = Vector3.zero;
+                        tmp.transform.localRotation = Quaternion.identity;
+                        tmp.transform.localScale = Vector3.one;
+
+                        List<Vector3> vertices = new List<Vector3>();
+                        foreach (Vector3 v in m.vertices)
+                        {
+                            Matrix4x4 mat = Matrix4x4.TRS(r.transform.localPosition, r.transform.localRotation, Vector3.one);
+                            vertices.Add(mat.MultiplyPoint(v));
+                        }
+                        m.vertices = vertices.ToArray();
+
+                        List<Matrix4x4> bindPoses = new List<Matrix4x4>();
+                        foreach (Transform tBone in tmp.bones)
+                        {
+                            bindPoses.Add(tBone.worldToLocalMatrix * tmp.transform.localToWorldMatrix);
+                        }
+                        m.bindposes = bindPoses.ToArray();
+                        m.boneWeights = tmp.GetMesh().boneWeights;
+                        Debug.Log(m.boneWeights.Length);
+
+                        tmp.SetMesh(m);
+                    }
+                }
+
                 EditorGUILayout.EndVertical();
             }
 

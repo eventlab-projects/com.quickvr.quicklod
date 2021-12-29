@@ -80,6 +80,45 @@ namespace QuickVR.QuickLOD
             return m.triangles.Length / 3;
         }
 
+        public static Mesh ComputeSubMesh(this Mesh m, List<int> subMeshTriangles)
+        {
+            List<Vector3> vertices = new List<Vector3>();
+            List<Vector3> normals = new List<Vector3>();
+            List<Vector2> uv = new List<Vector2>();
+            List<int> triangles = new List<int>();
+
+            Dictionary<int, int> vertexMap = new Dictionary<int, int>();
+
+            for (int i = 0; i < subMeshTriangles.Count; i += 3)
+            {
+                //For each vertex of the triangle, check if it is a new vertex or it has been already introduced to the 
+                //new triangles list of the submesh
+                int[] vTriangle = new int[] { subMeshTriangles[i + 0], subMeshTriangles[i + 1], subMeshTriangles[i + 2] };
+                foreach (int vID in vTriangle)
+                {
+                    if (!vertexMap.ContainsKey(vID))
+                    {
+                        vertices.Add(m.vertices[vID]);
+                        normals.Add(m.normals[vID]);
+                        uv.Add(m.uv[vID]);
+
+                        vertexMap[vID] = vertices.Count - 1;
+                    }
+
+                    triangles.Add(vertexMap[vID]);
+                }
+            }
+
+            Mesh result = new Mesh();
+
+            result.vertices = vertices.ToArray();
+            result.normals = normals.ToArray();
+            result.uv = uv.ToArray();
+            result.triangles = triangles.ToArray();
+
+            return result;
+        }
+
         public static List<T> GetEnumValues<T>()
         {
             return new List<T>((IEnumerable<T>)(System.Enum.GetValues(typeof(T))));

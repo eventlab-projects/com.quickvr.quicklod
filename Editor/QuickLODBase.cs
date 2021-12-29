@@ -82,8 +82,8 @@ namespace QuickVR.QuickLOD
                 _blendshapeMap[m] = new Dictionary<string, BlendshapeData>();
                 for (int i = 0; i < m.blendShapeCount; i++)
                 {
-                    //string bsName = m.GetBlendShapeName(i);
-                    string bsName = bsNamesMixamo[i];
+                    string bsName = m.GetBlendShapeName(i);
+                    //string bsName = bsNamesMixamo[i];
 
                     BlendshapeData bsData = new BlendshapeData(m, i);
                     _blendshapeMap[m][bsName] = bsData;
@@ -135,6 +135,7 @@ namespace QuickVR.QuickLOD
                 closestTriangles[j] = t;
                 if (t == null)
                 {
+                    Debug.Log("CLOSEST TRIANGLE NOT FOUND!!!");
                     Debug.Log(j);
                     Debug.Log(mSources[0].name);
                     //Debug.Log(mTarget.vertices[j].ToString("f16"));
@@ -183,6 +184,19 @@ namespace QuickVR.QuickLOD
                         if (r.name == rSource.name)
                         {
                             rGroup._renderers.Add(r);
+                            //ComputeConnectedRegions(r.GetMesh(), out List<Mesh> submeshes);
+                            //foreach (Mesh m in submeshes)
+                            //{
+                            //    GameObject goSubMesh = UnityEngine.Object.Instantiate(r.gameObject, r.transform.parent);
+                            //    goSubMesh.transform.localPosition = r.transform.localPosition;
+                            //    goSubMesh.transform.localRotation = r.transform.localRotation;
+                            //    goSubMesh.transform.localScale = r.transform.localScale;
+
+                            //    Renderer rSubMesh = goSubMesh.GetComponent<Renderer>();
+                            //    rSubMesh.name = r.name;
+                            //    rSubMesh.SetMesh(m);
+                            //    rGroup._renderers.Add(rSubMesh);
+                            //}
                         }
                     }
                 }
@@ -192,6 +206,11 @@ namespace QuickVR.QuickLOD
 
             foreach (RenderGroup rGroup in renderGroups)
             {
+                if (rGroup._renderers.Count == 0)
+                {
+                    continue;
+                }
+
                 using (ISimplygon simplygon = global::Simplygon.Loader.InitSimplygon
                 (out EErrorCodes simplygonErrorCode, out string simplygonErrorMessage))
                 {
@@ -201,7 +220,7 @@ namespace QuickVR.QuickLOD
                         {
                             InitRenderGroupData(rGroup);
                         }
-                        
+
                         //Simplify the renderers in the RenderGroup
                         List<GameObject> simplifiedGameObjects = new List<GameObject>();
                         Renderer r = null;
@@ -261,6 +280,261 @@ namespace QuickVR.QuickLOD
             AssetDatabase.Refresh();
 
             return goResult;
+        }
+
+        protected virtual void ComputeConnectedRegions(Mesh m, out List<Mesh> result)
+        {
+            //Compute the connected regions of the Mesh m. We use the color component of each vertex
+            //to store the value of the region it belongs to. 
+            int[] vertexMap = CreateVertexMap(m);
+
+            int newRegionID = 0;
+            Dictionary<int, HashSet<int>> regions = new Dictionary<int, HashSet<int>>();    //For each region, it returns the list of all the vertices on that region. 
+            Dictionary<int, int> vertexRegion = new Dictionary<int, int>();                 //For each vertex, it returns the region that contains that vertex. 
+            for (int i = 0; i < m.vertexCount; i++)
+            {
+                vertexRegion[i] = -1;
+            }
+
+            for (int i = 0; i < m.triangles.Length; i += 3)
+            {
+                int vID0 = m.triangles[i];
+                int vID1 = m.triangles[i + 1];
+                int vID2 = m.triangles[i + 2];
+
+                int rID0 = vertexRegion[vertexMap[vID0]];
+                int rID1 = vertexRegion[vertexMap[vID1]];
+                int rID2 = vertexRegion[vertexMap[vID2]];
+                int regionID = Mathf.Max(rID0, rID1, rID2);
+
+                if (regionID == -1)
+                {
+                    //None of the vertices has been assigned yet to a region. Create a new region that contains these 3 vertices. 
+                    regions[newRegionID] = new HashSet<int>(new int[] { vID0, vID1, vID2 });
+                    vertexRegion[vertexMap[vID0]] = vertexRegion[vertexMap[vID1]] = vertexRegion[vertexMap[vID2]] = newRegionID++;
+                }
+                else
+                {
+                    //At least one of the vertex is already part of an existing Region. 
+                    //Merge all the regions of the vertices to regionID
+                    int[] vertexIDs = { vID0, vID1, vID2 };
+                    int[] vRegions = { rID0, rID1, rID2 };
+
+                    for (int j = 0; j < 3; j++)
+                    {
+                        if (!regions.ContainsKey(regionID))
+                        {
+                            Debug.Log(regionID);
+                        }
+
+                        int vID = vertexIDs[j];
+                        regions[regionID].Add(vID);
+                        vertexRegion[vertexMap[vID]] = regionID;
+
+                        int rID = vRegions[j];
+                        if (rID != -1)
+                        {
+                            foreach (int v in regions[rID])
+                            {
+                                regions[regionID].Add(v);
+                                vertexRegion[vertexMap[v]] = regionID;
+                            }
+                        }
+                    }
+
+                    //Remove the old regions
+                    foreach (int rID in vRegions)
+                    {
+                        if (rID != regionID)
+                        {
+                            regions.Remove(rID);
+                        }
+                    }
+                }
+            }
+
+            Dictionary<int, List<int>> connectedRegions = new Dictionary<int, List<int>>();
+            for (int i = 0; i < m.triangles.Length; i += 3)
+            {
+                int[] vIDs = new int[] { vertexMap[m.triangles[i + 0]], vertexMap[m.triangles[i + 1]], vertexMap[m.triangles[i + 2]] };
+                int regionID = vertexRegion[vIDs[0]];
+
+                if (!connectedRegions.ContainsKey(regionID))
+                {
+                    connectedRegions[regionID] = new List<int>();
+                }
+
+                connectedRegions[regionID].AddRange(vIDs);
+            }
+
+            //Debug.Log("numRegions = " + connectedRegions.Count);
+            //foreach (var pair in connectedRegions)
+            //{
+            //    Debug.Log("ok = " + ((pair.Value.Count % 3) == 0));
+            //    Debug.Log("numTriangles = " + pair.Value.Count / 3);
+            //}
+
+            result = new List<Mesh>();
+            int subMeshID = 0;
+            //Debug.Log("numRegions = " + connectedRegions.Count);
+            foreach (var pair in connectedRegions)
+            {
+                Mesh tmp = m.ComputeSubMesh(pair.Value);
+                tmp.name = m.name + "_" + subMeshID++;
+                result.Add(tmp);
+            }
+
+            //Color32[] colors = new Color32[m.vertexCount];
+
+            ////Debug.Log(m.name);
+            ////Debug.Log("numRegions = " + regions.Count);
+
+            //foreach (var pair in regions)
+            //{
+            //    Color32 color = ComputeNewRegionColor();
+            //    //Debug.Log(color);
+
+            //    foreach (int vID in pair.Value)
+            //    {
+            //        colors[vID] = color;
+            //    }
+            //}
+
+            //m.colors32 = colors;
+        }
+
+        //protected virtual void ComputeConnectedRegions(Mesh m, out List<Mesh> result)
+        //{
+        //    //Compute the connected regions of the Mesh m. We use the color component of each vertex
+        //    //to store the value of the region it belongs to. 
+        //    int[] vertexMap = CreateVertexMap(m);
+
+        //    int newRegionID = 0;
+        //    Dictionary<int, List<int>> regions = new Dictionary<int, List<int>>();  //For each region, it returns the list of all the vertices on that region. 
+        //    Dictionary<int, int> vertexRegion = new Dictionary<int, int>();         //For each vertex, it returns the region that contains that vertex. 
+        //    for (int i = 0; i < m.vertexCount; i++)
+        //    {
+        //        vertexRegion[i] = -1;
+        //    }
+
+        //    for (int i = 0; i < m.triangles.Length; i += 3)
+        //    {
+        //        int vID0 = m.triangles[i];
+        //        int vID1 = m.triangles[i + 1];
+        //        int vID2 = m.triangles[i + 2];
+
+        //        int rID0 = vertexRegion[vertexMap[vID0]];
+        //        int rID1 = vertexRegion[vertexMap[vID1]];
+        //        int rID2 = vertexRegion[vertexMap[vID2]];
+        //        int regionID = Mathf.Max(rID0, rID1, rID2);
+
+        //        if (regionID == -1)
+        //        {
+        //            //None of the vertices has been assigned yet to a region. Create a new region that contains these 3 vertices. 
+        //            regions[newRegionID] = new List<int>(new int[] { vID0, vID1, vID2 });
+        //            vertexRegion[vertexMap[vID0]] = vertexRegion[vertexMap[vID1]] = vertexRegion[vertexMap[vID2]] = newRegionID++;
+        //        }
+        //        else
+        //        {
+        //            //At least one of the vertex is already part of an existing Region. 
+        //            //Merge all the regions of the vertices to regionID
+        //            int[] vertexIDs = { vID0, vID1, vID2 };
+        //            int[] vRegions = { rID0, rID1, rID2 };
+
+        //            for (int j = 0; j < 3; j++)
+        //            {
+        //                if (!regions.ContainsKey(regionID))
+        //                {
+        //                    Debug.Log(regionID);
+        //                }
+
+        //                int vID = vertexIDs[j];
+        //                regions[regionID].Add(vID);
+        //                vertexRegion[vertexMap[vID]] = regionID;
+
+        //                int rID = vRegions[j];
+        //                if (rID != -1 && rID != regionID)
+        //                {
+        //                    foreach (int v in regions[rID])
+        //                    {
+        //                        regions[regionID].Add(v);
+        //                        vertexRegion[vertexMap[v]] = regionID;
+        //                    }
+        //                }
+        //            }
+
+        //            //Remove the old regions
+        //            foreach (int rID in vRegions)
+        //            {
+        //                if (rID != regionID)
+        //                {
+        //                    regions.Remove(rID);
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //    result = new List<Mesh>();
+        //    int subMeshID = 0;
+        //    Debug.Log("numRegions = " + regions.Count);
+        //    foreach (var pair in regions)
+        //    {
+        //        Mesh tmp = m.ComputeSubMesh(pair.Value);
+        //        tmp.name = m.name + "_" + subMeshID++;
+        //        result.Add(tmp);
+        //    }
+
+        //}
+
+        protected virtual int[] CreateVertexMap(Mesh m)
+        {
+            int[] result;
+
+            bool uvOverlap = true;
+            if (uvOverlap)
+            {
+                result = CreateVertexMap(m, m);
+            }
+            else
+            {
+                result = new int[m.vertexCount];
+                for (int i = 0; i < m.vertexCount; i++)
+                {
+                    result[i] = i;
+                }
+            }
+
+            return result;
+        }
+
+        protected virtual int[] CreateVertexMap(Mesh mSource, Mesh mTarget)
+        {
+            Vector3[] vSource = new Vector3[mSource.vertices.Length];
+            Array.Copy(mSource.vertices, vSource, mSource.vertices.Length);
+            Array.Sort(vSource, new QuickComparerVector3());
+
+            //vSource contains the vertices of mSource sorted by its position. 
+
+            int[] tmp = new int[mSource.vertexCount];
+            for (int i = 0; i < mSource.vertexCount; i++)
+            {
+                int idSource = QuickComparerVector3.FindVector3(vSource, mSource.vertices[i]);
+                if (idSource < 0)
+                {
+                    Debug.Log(i);
+                    Debug.Log(mSource.vertices[i]);
+                }
+                tmp[idSource] = i;
+            }
+
+            int[] result = new int[mTarget.vertexCount];
+            for (int i = 0; i < mTarget.vertexCount; i++)
+            {
+                int idSource = QuickComparerVector3.FindVector3(vSource, mTarget.vertices[i]);
+                result[i] = idSource >= 0 ? tmp[idSource] : -1;
+            }
+
+            return result;
         }
 
         protected virtual void InitRenderGroupData(RenderGroup rGroup)

@@ -38,8 +38,11 @@ public static class QuickLODUtilsEditor
 
     public static string CreateAssetFolder(string path)
     {
+        Debug.Log("path = " + path);
         string[] folders = path.Split('/');
         string assetFolderPath;
+
+        Debug.Log("numFolders = " + folders.Length);
 
         if (folders.Length > 1)
         {
@@ -52,13 +55,21 @@ public static class QuickLODUtilsEditor
                 string tmp = parentFolder + '/' + s;
                 if (!AssetDatabase.IsValidFolder(parentFolder + '/' + s))
                 {
-                    AssetDatabase.CreateFolder(parentFolder, s);
+                    Debug.Log(AssetDatabase.CreateFolder(parentFolder, s));
+                    AssetDatabase.Refresh();
                 }
                 parentFolder = tmp;
             }
 
             //Create the last folder in the path
-            assetFolderPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.CreateFolder(parentFolder, folders[folders.Length - 1]));
+            string guid = AssetDatabase.CreateFolder(parentFolder, folders[folders.Length - 1]);
+            assetFolderPath = AssetDatabase.GUIDToAssetPath(guid);
+            AssetDatabase.Refresh();
+
+            Debug.Log(guid);
+            Debug.Log(parentFolder);
+            Debug.Log(folders[folders.Length - 1]);
+            Debug.Log("assetFolderPath = " + assetFolderPath);
         }
         else
         {
