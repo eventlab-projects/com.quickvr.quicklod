@@ -119,6 +119,69 @@ namespace QuickVR.QuickLOD
             return result;
         }
 
+        public static Renderer Bake(this Renderer r)
+        {
+            Renderer result = (r.GetType() == typeof(SkinnedMeshRenderer) ? ((SkinnedMeshRenderer)r).Bake() : UnityEngine.Object.Instantiate(r));
+            result.name = r.name;
+            result.GetMesh().name = r.GetMesh().name;
+
+            return result;
+        }
+
+        public static SkinnedMeshRenderer Bake(this SkinnedMeshRenderer rSource)
+        {
+            Mesh mSource = rSource.GetMesh();
+            Mesh mBaked = new Mesh();
+            rSource.BakeMesh(mBaked);
+            mBaked.name = mSource.name;
+
+            SkinnedMeshRenderer result = UnityEngine.Object.Instantiate(rSource);
+            result.name = rSource.name;
+            result.transform.parent = rSource.transform.parent;
+            result.transform.ResetTransformation();
+
+            //Transform the vertices of the bakedMesh, so it accounts for the local position and rotation of rSource
+            List<Vector3> vertices = new List<Vector3>();
+            foreach (Vector3 v in mBaked.vertices)
+            {
+                Matrix4x4 m = Matrix4x4.TRS(rSource.transform.localPosition, rSource.transform.localRotation, Vector3.one);
+                vertices.Add(m.MultiplyPoint(v));
+            }
+            mBaked.vertices = vertices.ToArray();
+
+            //Copy the skeleton
+            List<Matrix4x4> bindPoses = new List<Matrix4x4>();
+            foreach (Transform tBone in result.bones)
+            {
+                bindPoses.Add(tBone.worldToLocalMatrix * result.transform.localToWorldMatrix);
+            }
+            mBaked.bindposes = bindPoses.ToArray();
+            mBaked.boneWeights = mSource.boneWeights;
+
+            //Copy the blendshapes
+            Vector3[] dVertices = new Vector3[mSource.vertexCount];
+            Vector3[] dNormals = new Vector3[mSource.vertexCount];
+            Vector3[] dTangents = new Vector3[mSource.vertexCount];
+            for (int bsID = 0; bsID < mSource.blendShapeCount; bsID++)
+            {
+                string bsName = mSource.GetBlendShapeName(bsID);
+                mSource.GetBlendShapeFrameVertices(bsID, 0, dVertices, dNormals, dTangents);
+
+                //The vertex displacement must take into account the scale of the original SkinnedMeshRenderer
+                Matrix4x4 m = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, rSource.transform.localScale);
+                for (int i = 0; i < dVertices.Length; i++)
+                {
+                    dVertices[i] = m.MultiplyPoint(dVertices[i]);
+                }
+
+                mBaked.AddBlendShapeFrame(bsName, 100, dVertices, dNormals, dTangents);
+            }
+
+            result.SetMesh(mBaked);
+
+            return result;
+        }
+
         public static List<T> GetEnumValues<T>()
         {
             return new List<T>((IEnumerable<T>)(System.Enum.GetValues(typeof(T))));

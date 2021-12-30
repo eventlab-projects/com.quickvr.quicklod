@@ -135,9 +135,8 @@ namespace QuickVR.QuickLOD
                 closestTriangles[j] = t;
                 if (t == null)
                 {
-                    Debug.Log("CLOSEST TRIANGLE NOT FOUND!!!");
+                    Debug.Log("CLOSEST TRIANGLE NOT FOUND!!! " + mTarget.name);
                     Debug.Log(j);
-                    Debug.Log(mSources[0].name);
                     //Debug.Log(mTarget.vertices[j].ToString("f16"));
                     //if (j == 21)
                     //{
@@ -183,7 +182,9 @@ namespace QuickVR.QuickLOD
                     {
                         if (r.name == rSource.name)
                         {
-                            rGroup._renderers.Add(r);
+                            //rGroup._renderers.Add(r);
+                            rGroup._renderers.Add(r.Bake());
+                            
                             //ComputeConnectedRegions(r.GetMesh(), out List<Mesh> submeshes);
                             //foreach (Mesh m in submeshes)
                             //{
@@ -203,6 +204,7 @@ namespace QuickVR.QuickLOD
 
                 renderGroups.Add(rGroup);
             }
+            QuickLODUtils.DestroyImmediate(renderers);
 
             foreach (RenderGroup rGroup in renderGroups)
             {
