@@ -135,8 +135,8 @@ namespace QuickVR.QuickLOD
                 closestTriangles[j] = t;
                 if (t == null)
                 {
-                    Debug.Log("CLOSEST TRIANGLE NOT FOUND!!! " + mTarget.name);
-                    Debug.Log(j);
+                    //Debug.Log("CLOSEST TRIANGLE NOT FOUND!!! " + mTarget.name);
+                    //Debug.Log(j);
                     //Debug.Log(mTarget.vertices[j].ToString("f16"));
                     //if (j == 21)
                     //{
@@ -685,13 +685,16 @@ namespace QuickVR.QuickLOD
             BoneWeight[] boneWeights = new BoneWeight[mTarget.vertexCount];
             for (int j = 0; j < mTarget.vertexCount; j++)
             {
+                Vector3 vPos = mTarget.vertices[j];
                 QuickTriangleMesh t = closestTriangles[j];
                 closestTriangles[j] = t;
+                BoneWeight bWeight = new BoneWeight();
+                
                 if (t != null)
                 {
-                    int vID = t.GetClosestVertexID(mTarget.vertices[j]);
+                    int vID = t.GetClosestVertexID(vPos);
                     Mesh m = t._mesh;
-                    BoneWeight bWeight = m.boneWeights[vID];
+                    bWeight = m.boneWeights[vID];
 
                     if (bWeight.weight0 > 0)
                     {
@@ -709,9 +712,33 @@ namespace QuickVR.QuickLOD
                     {
                         bWeight.boneIndex3 = boneMap[m][bWeight.boneIndex3];
                     }
-
-                    boneWeights[j] = bWeight;
                 }
+                else
+                {
+                    //No closest triangle has been found for this vertex. Look for the closest 
+                    //bone to that vertex and assign a weight value of 1 to it. 
+                    int closestBoneID = -1;
+                    float dMin = Mathf.Infinity;
+
+                    for (int boneID = 0; boneID < bones.Count; boneID++)
+                    {
+                        float d2 = Vector3.SqrMagnitude(vPos - bones[boneID].position);
+                        if (d2 < dMin)
+                        {
+                            closestBoneID = boneID;
+                            dMin = d2;
+                        }
+                    }
+
+                    //Debug.Log("NULL TRIANGLE!!!");
+                    //Debug.Log(bones[closestBoneID].name);
+                    //Debug.Log(bones.Count);
+
+                    bWeight.boneIndex0 = closestBoneID;
+                    bWeight.weight0 = 1;
+                }
+
+                boneWeights[j] = bWeight;
             }
 
             rTarget.bones = bones.ToArray();

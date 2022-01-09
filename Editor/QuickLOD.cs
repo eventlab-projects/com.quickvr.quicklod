@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 
 using Simplygon;
+using Simplygon.Unity.EditorPlugin;
 
 using UnityEngine;
 
@@ -37,15 +38,67 @@ namespace QuickVR.QuickLOD
 
         #region GET AND SET
 
-        public virtual void TestComputeTriangleTextureMap(Mesh mSource)
-        {
-            float timeStart = Time.realtimeSinceStartup;
-            
-            QuickTriangleTextureMap tMap = new QuickTriangleTextureMap();
-            tMap.ComputeTriangleTextureMap(mSource);
+        //public virtual void TestComputeTriangleTextureMap(Renderer r)
+        //{
+        //    using (ISimplygon simplygon = global::Simplygon.Loader.InitSimplygon
+        //    (out EErrorCodes simplygonErrorCode, out string simplygonErrorMessage))
+        //    {
+        //        if (simplygonErrorCode == Simplygon.EErrorCodes.NoError)
+        //        {
+        //            float timeStart = Time.realtimeSinceStartup;
 
-            Debug.Log("timeComputeTriangleTextureMap = " + (Time.realtimeSinceStartup - timeStart).ToString("f3"));
-        }
+        //            Mesh m = r.GetMesh();
+
+        //            Color[] colors = new Color[m.vertexCount];
+        //            for (int i = 0; i < m.vertexCount; i++)
+        //            {
+        //                colors[i] = new Color(m.uv[i].x, m.uv[i].y, 0);
+        //            }
+        //            m.colors = colors;
+
+        //            Mesh tmp = GenerateUV1(simplygon, r, 2048).GetComponent<Renderer>().GetMesh();
+        //            Vector2[] uv = new Vector2[tmp.vertexCount];
+        //            Vector2[] uv2 = new Vector2[tmp.vertexCount];
+        //            for (int i = 0; i < tmp.vertexCount; i++)
+        //            {
+        //                uv[i] = new Vector2(tmp.colors[i].r, tmp.colors[i].g);
+        //                uv2[i] = tmp.uv[i];
+        //            }
+        //            tmp.uv = uv;
+        //            tmp.uv2 = uv2;
+
+        //            int[] vertexMap = CreateVertexMap(m, tmp);
+        //            BoneWeight[] boneWeights = new BoneWeight[tmp.vertexCount];
+        //            for (int j = 0; j < tmp.vertexCount; j++)
+        //            {
+        //                BoneWeight bWeight = new BoneWeight();
+
+        //                int vSourceID = vertexMap[j];
+        //                if (vSourceID != -1)
+        //                {
+        //                    bWeight = m.boneWeights[vSourceID];
+        //                }
+        //                else
+        //                {
+        //                    bWeight.boneIndex0 = 0;
+        //                    bWeight.weight0 = 1;
+        //                }
+
+        //                boneWeights[j] = bWeight;
+        //            }
+
+        //            tmp.boneWeights = boneWeights;
+        //            tmp.bindposes = m.bindposes;
+        //            r.SetMesh(tmp);
+
+        //            QuickTriangleTextureMap tMap = new QuickTriangleTextureMap();
+        //            tMap.ComputeTriangleTextureMap(r.GetMesh());
+
+        //            Debug.Log("timeComputeTriangleTextureMap = " + (Time.realtimeSinceStartup - timeStart).ToString("f3"));
+
+        //        }
+        //    }
+        //}
 
         //protected virtual Texture2D ComputeTriangleTextureMap(Mesh mSource)
         //{
@@ -121,8 +174,9 @@ namespace QuickVR.QuickLOD
         //    return result;
         //}
 
-        protected virtual void ComputeVertexToTriangleMap(Mesh m, int meshID)
+        protected virtual void ComputeVertexToTriangleMap(Renderer r, int meshID)
         {
+            Mesh m = r.GetMesh();
             List<Color> colors = new List<Color>();
             float mID = meshID / 255.0f;
 
@@ -185,15 +239,180 @@ namespace QuickVR.QuickLOD
         {
             QuickTriangleTextureMap tMap = new QuickTriangleTextureMap();
             tMap.ComputeTriangleTextureMap(r.GetMesh());
+
             //SaveTexture(tMap, "TriangleMap_" + i.ToString());
             _triangleTextureMaps.Add(tMap);
 
             GameObject sGO = base.Simplify(simplygon, r, renderID, reductionFactor);
-
-            Debug.Log(sGO);
-            ComputeVertexToTriangleMap(sGO.GetComponent<Renderer>().GetMesh(), renderID);
+            ComputeVertexToTriangleMap(r, renderID);
 
             return sGO;
+        }
+
+        //protected override GameObject Simplify(ISimplygon simplygon, Renderer r, int renderID, float reductionFactor)
+        //{
+        //    Mesh m = r.GetMesh();
+
+        //    Color[] colors = new Color[m.vertexCount];
+        //    for (int i = 0; i < m.vertexCount; i++)
+        //    {
+        //        colors[i] = new Color(m.uv[i].x, m.uv[i].y, 0);
+        //    }
+        //    m.colors = colors;
+
+        //    Mesh tmp = GenerateUV1(simplygon, r, 2048).GetComponent<Renderer>().GetMesh();
+        //    Vector2[] uv = new Vector2[tmp.vertexCount];
+        //    Vector2[] uv2 = new Vector2[tmp.vertexCount];
+        //    for (int i = 0; i < tmp.vertexCount; i++)
+        //    {
+        //        uv[i] = new Vector2(tmp.colors[i].r, tmp.colors[i].g);
+        //        uv2[i] = tmp.uv[i];
+        //    }
+        //    tmp.uv = uv;
+        //    tmp.uv2 = uv2;
+
+        //    int[] vertexMap = CreateVertexMap(m, tmp);
+        //    BoneWeight[] boneWeights = new BoneWeight[tmp.vertexCount];
+        //    for (int j = 0; j < tmp.vertexCount; j++)
+        //    {
+        //        BoneWeight bWeight = new BoneWeight();
+
+        //        int vSourceID = vertexMap[j];
+        //        if (vSourceID != -1)
+        //        {
+        //            bWeight = m.boneWeights[vSourceID];
+        //        }
+        //        else
+        //        {
+        //            bWeight.boneIndex0 = 0;
+        //            bWeight.weight0 = 1;
+        //        }
+
+        //        boneWeights[j] = bWeight;
+        //    }
+
+        //    tmp.boneWeights = boneWeights;
+        //    tmp.bindposes = m.bindposes;
+        //    r.SetMesh(tmp);
+
+        //    QuickTriangleTextureMap tMap = new QuickTriangleTextureMap();
+        //    tMap.ComputeTriangleTextureMap(r.GetMesh());
+
+        //    //SaveTexture(tMap, "TriangleMap_" + i.ToString());
+        //    _triangleTextureMaps.Add(tMap);
+
+        //    ComputeVertexToTriangleMap(r, renderID);
+        //    GameObject sGO = base.Simplify(simplygon, r, renderID, reductionFactor);
+
+
+        //    //ComputeVertexToTriangleMap(sGO.GetComponent<Renderer>().GetMesh(), renderID);
+
+        //    return sGO;
+        //}
+
+        protected GameObject GenerateUV1(ISimplygon simplygon, Renderer r, int atlasResolution)
+        {
+            GameObject result = null;
+
+            List<GameObject> selectedGameObjects = new List<GameObject>();
+            selectedGameObjects.Add(r.gameObject);
+
+            string exportTempDirectory = SimplygonUtils.GetNewTempDirectory();
+
+            using (spScene sgScene = SimplygonExporter.Export(simplygon, exportTempDirectory, selectedGameObjects))
+            using (spAggregationPipeline pipeline = simplygon.CreateAggregationPipeline())
+            using (spAggregationSettings pipelineSettings = pipeline.GetAggregationSettings())
+            {
+                //Create a parameterizer object
+                //spParameterizer param = simplygon.CreateParameterizer();
+
+                ////Set the properties for the parameterizer
+                //param.SetMaxStretch(0.25f);
+                //param.SetTextureWidth((uint)atlasResolution);
+                //param.SetTextureHeight((uint)atlasResolution);
+
+                //// Parameterize all the objects in the file.
+                //for (uint geomId = 0; geomId < sgScene.GetRootNode().GetChildCount(); ++geomId)
+                //{
+                //    //Cast the node to mesh node, and fetch geometry pointer from it
+                //    spGeometryData geom = spSceneMesh.SafeCast(sgScene.GetRootNode().GetChild((int)geomId)).GetGeometry();
+                //    Debug.Log("numVerts = " + geom.GetVertexCount());
+                //    Debug.Log("numTris = " + geom.GetTriangleCount());
+
+                //    //If the mesh does not have UVs, create them
+                //    if (geom.GetTexCoords(0) == null)
+                //    {
+                //        geom.AddTexCoords(0);
+                //    }
+
+                //    param.Parameterize(geom, geom.GetTexCoords(0));
+                //    ////Parameterize the selected geometry and input the generated texture coordinates
+                //    ////into the first (index 0) UV field.
+                //    //if (!param->Parameterize(geom, geom->GetTexCoords(0)))
+                //    //    std::cout << "Couldn't parameterize geometry." << std::endl;
+
+                //    spRealArray tCoords = geom.GetTexCoords(0);
+                //    Debug.Log("itemCount = " + tCoords.GetItemCount());
+                //    Debug.Log("numTuples = " + tCoords.GetTupleCount());
+                //    Debug.Log("tupleSize = " + tCoords.GetTupleSize());
+
+                //    Debug.Log("numVertsAfter = " + geom.GetVertexCount());
+
+                //    Debug.Log("numCoords = " + geom.GetCoords().GetItemCount());
+
+                //    Debug.Log("HOLA DON PEPITO!!!");
+                //}
+
+                //spPassthroughPipeline test = simplygon.CreatePassthroughPipeline();
+
+
+
+                //Aggregation settings
+                pipelineSettings.SetMergeGeometries(true);
+                pipelineSettings.SetEnableGeometryCulling(false);
+
+                // Generates a mapping image which is used after the reduction to cast new materials to the new 
+                // reduced object. 
+                spMappingImageSettings sgMappingImageSettings = pipeline.GetMappingImageSettings();
+                sgMappingImageSettings.SetGenerateMappingImage(true);
+                sgMappingImageSettings.SetGenerateTexCoords(false);
+                sgMappingImageSettings.SetGenerateTangents(false);
+                sgMappingImageSettings.SetUseFullRetexturing(true);
+                sgMappingImageSettings.SetApplyNewMaterialIds(true);
+                sgMappingImageSettings.SetTexCoordGeneratorType(ETexcoordGeneratorType.Parameterizer);
+
+                spMappingImageOutputMaterialSettings sgOutputMaterialSettings = sgMappingImageSettings.GetOutputMaterialSettings(0);
+                // Setting the size of the output material for the mapping image. This will be the output size of the 
+                // textures when we do material casting in a later stage. 
+                sgOutputMaterialSettings.SetTextureWidth((uint)atlasResolution);
+                sgOutputMaterialSettings.SetTextureHeight((uint)atlasResolution);
+
+                spParameterizerSettings paramSettings = sgMappingImageSettings.GetParameterizerSettings();
+                paramSettings.SetLargeChartsImportance(1);
+
+                // Add diffuse material caster to pipeline. 
+                spColorCaster sgDiffuseCaster = simplygon.CreateColorCaster();
+                spColorCasterSettings sgDiffuseCasterSettings = sgDiffuseCaster.GetColorCasterSettings();
+                sgDiffuseCasterSettings.SetMaterialChannel("diffuseColor");
+                sgDiffuseCasterSettings.SetOpacityChannelComponent(EColorComponent.Alpha);
+                sgDiffuseCasterSettings.SetOpacityChannel("diffuseColor");
+                sgDiffuseCasterSettings.SetDitherType(EDitherPatterns.FloydSteinberg);
+                sgDiffuseCasterSettings.SetFillMode(EAtlasFillMode.Interpolate);
+                sgDiffuseCasterSettings.SetDilation(10);
+                sgDiffuseCasterSettings.SetUseMultisampling(true);
+                sgDiffuseCasterSettings.SetOutputPixelFormat(EPixelFormat.R8G8B8A8);
+                sgDiffuseCasterSettings.SetOutputSRGB(true);
+                sgDiffuseCasterSettings.SetOutputImageFileFormat(EImageOutputFormat.PNG);
+                sgDiffuseCasterSettings.SetBakeOpacityInAlpha(false);
+                sgDiffuseCasterSettings.SetSkipCastingIfNoInputChannel(false);
+                sgDiffuseCasterSettings.SetOutputOpacityType(EOpacityType.Opacity);
+
+                pipeline.AddMaterialCaster(sgDiffuseCaster, 0);
+
+                result = ExecuteSimplygonPipeline(simplygon, pipeline, sgScene, r.gameObject.name);
+            }
+
+            return result;
         }
 
         #endregion

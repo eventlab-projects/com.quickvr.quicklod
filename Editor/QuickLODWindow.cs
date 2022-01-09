@@ -137,21 +137,21 @@ namespace QuickVR.QuickLOD
                     _simplifier.Simplify(_target, _reductionFactor, renderGroups);
                 }
 
-                if (QuickLODUtilsEditor.DrawButton("Test"))
-                {
-                    foreach (Renderer r in _freeRenderers)
-                    {
-                        _simplifier.TestComputeTriangleTextureMap(r.GetMesh());
-                    }
-                }
+                //if (QuickLODUtilsEditor.DrawButton("Test"))
+                //{
+                //    foreach (Renderer r in _freeRenderers)
+                //    {
+                //        _simplifier.TestComputeTriangleTextureMap(r);
+                //    }
+                //}
 
-                if (QuickLODUtilsEditor.DrawButton("TestBakeMesh"))
-                {
-                    foreach (Renderer rSource in _target.GetComponentsInChildren<Renderer>())
-                    {
-                        rSource.Bake();
-                    }
-                }
+                //if (QuickLODUtilsEditor.DrawButton("TestBakeMesh"))
+                //{
+                //    foreach (Renderer rSource in _target.GetComponentsInChildren<Renderer>())
+                //    {
+                //        rSource.Bake();
+                //    }
+                //}
 
                 EditorGUILayout.EndVertical();
             }

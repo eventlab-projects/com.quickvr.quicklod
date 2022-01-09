@@ -126,6 +126,7 @@ namespace QuickVR.QuickLOD
 
             return _renderTextures[i];
         }
+
         public virtual void ComputeTriangleTextureMap(Mesh mSource)
         {
 
