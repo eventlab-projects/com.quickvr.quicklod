@@ -21,7 +21,7 @@ Next Go to _Window > Package Manager_ and click on the ‘+’ symbol in the top
 
 A text field will open. Copy and paste the following URL, and then click on _Add_. 
 
-https://github.com/eventlab-projects/com.quickvr.quickbase.git
+https://github.com/eventlab-projects/com.quickvr.quicklod.git
 
 __Now be patient__. Sometimes it seems that Unity does not produce any kind of visual feedback and it looks like nothing is happening, but the package is downloading. Then it will be automatically imported. 
 
