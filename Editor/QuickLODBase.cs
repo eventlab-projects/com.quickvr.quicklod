@@ -575,55 +575,63 @@ namespace QuickVR.QuickLOD
             return result;
         }
 
+        
         protected GameObject MergeMaterials(ISimplygon simplygon, List<GameObject> selectedGameObjects, int atlasResolution, string resultName)
         {
             GameObject result = null;
-            string exportTempDirectory = SimplygonUtils.GetNewTempDirectory();
-
-            using (spScene sgScene = SimplygonExporter.Export(simplygon, exportTempDirectory, selectedGameObjects))
-            using (spAggregationPipeline pipeline = simplygon.CreateAggregationPipeline())
-            using (spAggregationSettings pipelineSettings = pipeline.GetAggregationSettings())
+            if (selectedGameObjects.Count == 1)
             {
-                //Aggregation settings
-                pipelineSettings.SetMergeGeometries(true);
-                pipelineSettings.SetEnableGeometryCulling(false);
-                    
-                // Generates a mapping image which is used after the reduction to cast new materials to the new 
-                // reduced object. 
-                spMappingImageSettings sgMappingImageSettings = pipeline.GetMappingImageSettings();
-                sgMappingImageSettings.SetGenerateMappingImage(true);
-                sgMappingImageSettings.SetGenerateTexCoords(false);
-                sgMappingImageSettings.SetGenerateTangents(false);
-                sgMappingImageSettings.SetUseFullRetexturing(true);
-                sgMappingImageSettings.SetApplyNewMaterialIds(true);
-                sgMappingImageSettings.SetTexCoordGeneratorType(ETexcoordGeneratorType.ChartAggregator);
+                result = selectedGameObjects[0];
+            }
+            else
+            {
+                string exportTempDirectory = SimplygonUtils.GetNewTempDirectory();
 
-                spMappingImageOutputMaterialSettings sgOutputMaterialSettings = sgMappingImageSettings.GetOutputMaterialSettings(0);
-                // Setting the size of the output material for the mapping image. This will be the output size of the 
-                // textures when we do material casting in a later stage. 
-                sgOutputMaterialSettings.SetTextureWidth((uint)atlasResolution);
-                sgOutputMaterialSettings.SetTextureHeight((uint)atlasResolution);
+                using (spScene sgScene = SimplygonExporter.Export(simplygon, exportTempDirectory, selectedGameObjects))
+                using (spAggregationPipeline pipeline = simplygon.CreateAggregationPipeline())
+                using (spAggregationSettings pipelineSettings = pipeline.GetAggregationSettings())
+                {
+                    //Aggregation settings
+                    pipelineSettings.SetMergeGeometries(true);
+                    pipelineSettings.SetEnableGeometryCulling(false);
 
-                // Add diffuse material caster to pipeline. 
-                spColorCaster sgDiffuseCaster = simplygon.CreateColorCaster();
-                spColorCasterSettings sgDiffuseCasterSettings = sgDiffuseCaster.GetColorCasterSettings();
-                sgDiffuseCasterSettings.SetMaterialChannel("diffuseColor");
-                sgDiffuseCasterSettings.SetOpacityChannelComponent(EColorComponent.Alpha);
-                sgDiffuseCasterSettings.SetOpacityChannel("diffuseColor");
-                sgDiffuseCasterSettings.SetDitherType(EDitherPatterns.FloydSteinberg);
-                sgDiffuseCasterSettings.SetFillMode(EAtlasFillMode.Interpolate);
-                sgDiffuseCasterSettings.SetDilation(10);
-                sgDiffuseCasterSettings.SetUseMultisampling(true);
-                sgDiffuseCasterSettings.SetOutputPixelFormat(EPixelFormat.R8G8B8A8);
-                sgDiffuseCasterSettings.SetOutputSRGB(true);
-                sgDiffuseCasterSettings.SetOutputImageFileFormat(EImageOutputFormat.PNG);
-                sgDiffuseCasterSettings.SetBakeOpacityInAlpha(false);
-                sgDiffuseCasterSettings.SetSkipCastingIfNoInputChannel(false);
-                sgDiffuseCasterSettings.SetOutputOpacityType(EOpacityType.Opacity);
+                    // Generates a mapping image which is used after the reduction to cast new materials to the new 
+                    // reduced object. 
+                    spMappingImageSettings sgMappingImageSettings = pipeline.GetMappingImageSettings();
+                    sgMappingImageSettings.SetGenerateMappingImage(true);
+                    sgMappingImageSettings.SetGenerateTexCoords(false);
+                    sgMappingImageSettings.SetGenerateTangents(false);
+                    sgMappingImageSettings.SetUseFullRetexturing(true);
+                    sgMappingImageSettings.SetApplyNewMaterialIds(true);
+                    sgMappingImageSettings.SetTexCoordGeneratorType(ETexcoordGeneratorType.ChartAggregator);
 
-                pipeline.AddMaterialCaster(sgDiffuseCaster, 0);
+                    spMappingImageOutputMaterialSettings sgOutputMaterialSettings = sgMappingImageSettings.GetOutputMaterialSettings(0);
+                    // Setting the size of the output material for the mapping image. This will be the output size of the 
+                    // textures when we do material casting in a later stage. 
+                    sgOutputMaterialSettings.SetTextureWidth((uint)atlasResolution);
+                    sgOutputMaterialSettings.SetTextureHeight((uint)atlasResolution);
 
-                result = ExecuteSimplygonPipeline(simplygon, pipeline, sgScene, resultName);
+                    // Add diffuse material caster to pipeline. 
+                    spColorCaster sgDiffuseCaster = simplygon.CreateColorCaster();
+                    spColorCasterSettings sgDiffuseCasterSettings = sgDiffuseCaster.GetColorCasterSettings();
+                    sgDiffuseCasterSettings.SetMaterialChannel("diffuseColor");
+                    sgDiffuseCasterSettings.SetOpacityChannelComponent(EColorComponent.Alpha);
+                    sgDiffuseCasterSettings.SetOpacityChannel("diffuseColor");
+                    sgDiffuseCasterSettings.SetDitherType(EDitherPatterns.FloydSteinberg);
+                    sgDiffuseCasterSettings.SetFillMode(EAtlasFillMode.Interpolate);
+                    sgDiffuseCasterSettings.SetDilation(10);
+                    sgDiffuseCasterSettings.SetUseMultisampling(true);
+                    sgDiffuseCasterSettings.SetOutputPixelFormat(EPixelFormat.R8G8B8A8);
+                    sgDiffuseCasterSettings.SetOutputSRGB(true);
+                    sgDiffuseCasterSettings.SetOutputImageFileFormat(EImageOutputFormat.PNG);
+                    sgDiffuseCasterSettings.SetBakeOpacityInAlpha(false);
+                    sgDiffuseCasterSettings.SetSkipCastingIfNoInputChannel(false);
+                    sgDiffuseCasterSettings.SetOutputOpacityType(EOpacityType.Opacity);
+
+                    pipeline.AddMaterialCaster(sgDiffuseCaster, 0);
+
+                    result = ExecuteSimplygonPipeline(simplygon, pipeline, sgScene, resultName);
+                }
             }
 
             return result;
