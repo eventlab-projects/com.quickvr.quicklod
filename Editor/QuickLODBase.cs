@@ -128,6 +128,7 @@ namespace QuickVR.QuickLOD
         protected virtual QuickTriangleMesh[] ComputeClosestTriangles(Mesh[] mSources, Mesh mTarget)
         {
             QuickTriangleMesh[] closestTriangles = new QuickTriangleMesh[mTarget.vertexCount];
+            
             for (int j = 0; j < mTarget.vertexCount; j++)
             {
                 VertexData vData = new VertexData(mTarget.vertices[j], mTarget.normals[j], mTarget.colors32[j]);
@@ -165,7 +166,8 @@ namespace QuickVR.QuickLOD
             }
 
             //Create a copy of the original GameObject and replace the meshes by the simplified ones
-            GameObject go = UnityEngine.Object.Instantiate(goSource, Vector3.zero, Quaternion.identity);
+            GameObject go = UnityEngine.Object.Instantiate(goSource);
+            go.transform.ResetTransformation();
             go.name = goSource.name + "_MERGED";
 
             //Create a new list of RenderGroups that points to the Renderers of the cloned GameObject
@@ -273,6 +275,7 @@ namespace QuickVR.QuickLOD
 
             go.transform.position = goSource.transform.position;
             go.transform.rotation = goSource.transform.rotation;
+            go.transform.localScale = goSource.transform.localScale;
 
             GameObject goResult = Export(goSource.name, go);
 

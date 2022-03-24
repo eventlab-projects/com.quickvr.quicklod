@@ -244,7 +244,7 @@ namespace QuickVR.QuickLOD
             _triangleTextureMaps.Add(tMap);
 
             GameObject sGO = base.Simplify(simplygon, r, renderID, reductionFactor);
-            ComputeVertexToTriangleMap(r, renderID);
+            ComputeVertexToTriangleMap(sGO.GetComponent<Renderer>(), renderID);
 
             return sGO;
         }
