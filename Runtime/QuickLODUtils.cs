@@ -173,8 +173,8 @@ namespace QuickVR.QuickLOD
                 for (int i = 0; i < dVertices.Length; i++)
                 {
                     dVertices[i] = m.MultiplyPoint(dVertices[i]);
-                    dNormals[i] = Vector3.zero;
-                    //dNormals[i] = m.MultiplyVector(dNormals[i]).normalized;
+                    //dNormals[i] = Vector3.zero;
+                    dNormals[i] = m.MultiplyVector(dNormals[i]);
                     //dTangents[i] = m.MultiplyVector(dTangents[i]).normalized;
                 }
 
