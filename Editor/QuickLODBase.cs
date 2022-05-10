@@ -131,7 +131,7 @@ namespace QuickVR.QuickLOD
             
             for (int j = 0; j < mTarget.vertexCount; j++)
             {
-                VertexData vData = new VertexData(mTarget.vertices[j], mTarget.normals[j], mTarget.colors32[j]);
+                VertexData vData = new VertexData(mTarget.vertices[j], mTarget.normals[j], mTarget.colors[j]);
                 QuickTriangleMesh t = GetClosestTriangle(vData, mSources);
                 closestTriangles[j] = t;
                 if (t == null)
@@ -186,7 +186,7 @@ namespace QuickVR.QuickLOD
                         {
                             //rGroup._renderers.Add(r);
                             rGroup._renderers.Add(r.Bake());
-                            
+
                             //ComputeConnectedRegions(r.GetMesh(), out List<Mesh> submeshes);
                             //foreach (Mesh m in submeshes)
                             //{
@@ -285,6 +285,8 @@ namespace QuickVR.QuickLOD
             AssetDatabase.Refresh();
 
             return goResult;
+
+            //return null;
         }
 
         protected virtual void ComputeConnectedRegions(Mesh m, out List<Mesh> result)
