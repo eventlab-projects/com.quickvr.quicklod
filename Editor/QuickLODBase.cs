@@ -639,6 +639,11 @@ namespace QuickVR.QuickLOD
             return result;
         }
 
+        protected virtual GameObject GenerateUVs(ISimplygon simplygon, spScene scene)
+        {
+            return null;
+        }
+
         protected virtual GameObject ExecuteSimplygonPipeline(ISimplygon simplygon, spPipeline pipeline, spScene scene, string resultName)
         {
             pipeline.RunScene(scene, EPipelineRunMode.RunInThisProcess);

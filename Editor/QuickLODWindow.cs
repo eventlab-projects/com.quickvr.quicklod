@@ -60,7 +60,7 @@ namespace QuickVR.QuickLOD
 
         #region CREATION AND DESTRUCTION
 
-        [MenuItem("QuickVR/QuickLOD")]
+        [MenuItem("QuickVR/QuickLOD/Simplifier")]
         static void Init()
         {
             // Get existing open window or if none, make a new one:
