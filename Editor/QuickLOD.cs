@@ -249,6 +249,21 @@ namespace QuickVR.QuickLOD
             return sGO;
         }
 
+        public override void TransferBlendShapes(SkinnedMeshRenderer rSource, SkinnedMeshRenderer rTarget)
+        {
+            _triangleTextureMaps = new List<QuickTriangleTextureMap>();
+
+            QuickTriangleTextureMap tMap = new QuickTriangleTextureMap();
+            tMap.ComputeTriangleTextureMap(rSource.GetMesh());
+
+            //SaveTexture(tMap, "TriangleMap_" + i.ToString());
+            _triangleTextureMaps.Add(tMap);
+
+            ComputeVertexToTriangleMap(rTarget, 0);
+
+            base.TransferBlendShapes(rSource, rTarget);
+        }
+
         //protected override GameObject Simplify(ISimplygon simplygon, Renderer r, int renderID, float reductionFactor)
         //{
         //    Mesh m = r.GetMesh();

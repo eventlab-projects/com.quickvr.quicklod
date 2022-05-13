@@ -54,7 +54,7 @@ namespace QuickVR.QuickLOD
 
             EditorGUILayout.BeginVertical(GUILayout.Width(384));
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
-            titleContent.text = "QuickLOD";
+            titleContent.text = "DataTransfer";
 
             EditorGUILayout.Space();
 
@@ -73,6 +73,20 @@ namespace QuickVR.QuickLOD
                 if (QuickLODUtilsEditor.DrawButton("Transfer Blendshapes"))
                 {
                     //_simplifier.Simplify(_target, _reductionFactor, renderGroups);
+                    foreach (SkinnedMeshRenderer smRendererSource in _source.GetComponentsInChildren<SkinnedMeshRenderer>())
+                    {
+                        Mesh mSource = smRendererSource.GetMesh();
+                        if (mSource.blendShapeCount > 0)
+                        {
+                            foreach (SkinnedMeshRenderer smRendererTarget in _target.GetComponentsInChildren<SkinnedMeshRenderer>())
+                            {
+                                if (smRendererSource.name == smRendererTarget.name)
+                                {
+                                    _simplifier.TransferBlendShapes(smRendererSource, smRendererTarget);
+                                }
+                            }
+                        }
+                    }
                 }
 
                 EditorGUILayout.EndVertical();

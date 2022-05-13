@@ -690,6 +690,22 @@ namespace QuickVR.QuickLOD
             Debug.Log("timeTransferBlendShapes = " + (Time.realtimeSinceStartup - timeStart).ToString("f3"));
         }
 
+        public virtual void TransferBlendShapes(SkinnedMeshRenderer rSource, SkinnedMeshRenderer rTarget)
+        {
+            Mesh[] mSources = new Mesh[] { rSource.GetMesh() };
+            Mesh mTarget = rTarget.GetMesh();
+
+            //For each vertex in mTarget, compute its closest triangle in mSources
+            float timeStart = Time.realtimeSinceStartup;
+            QuickTriangleMesh[] closestTriangles = ComputeClosestTriangles(mSources, mTarget);
+            Debug.Log("timeComputeClosestTriangles = " + (Time.realtimeSinceStartup - timeStart).ToString("f3"));
+
+            //Transfer the BlendShapes
+            timeStart = Time.realtimeSinceStartup;
+            TransferBlendShapes(mSources, mTarget, closestTriangles);
+            Debug.Log("timeTransferBlendShapes = " + (Time.realtimeSinceStartup - timeStart).ToString("f3"));
+        }
+
         public virtual void TransferSkinning(SkinnedMeshRenderer rSource, SkinnedMeshRenderer rTarget, QuickTriangleMesh[] closestTriangles)
         {
             TransferSkinning(new SkinnedMeshRenderer[] { rSource }, rTarget, closestTriangles);
