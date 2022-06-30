@@ -630,7 +630,30 @@ namespace QuickVR.QuickLOD
                     sgDiffuseCasterSettings.SetSkipCastingIfNoInputChannel(false);
                     sgDiffuseCasterSettings.SetOutputOpacityType(EOpacityType.Opacity);
 
+                    // Add the normal caster to pipeline. 
+                    //spNormalCaster sgNormalCaster = simplygon.CreateNormalCaster();
+                    //spNormalCasterSettings sgNormalCasterSettings = sgNormalCaster.GetNormalCasterSettings();
+                    //sgNorm
+
+                    //spColorCaster sgNormalCaster = simplygon.CreateColorCaster();
+                    //spColorCasterSettings sgNormalCasterSettings = sgNormalCaster.GetColorCasterSettings();
+                    //sgNormalCasterSettings.SetMaterialChannel("normal");
+                    //sgNormalCasterSettings.SetOpacityChannelComponent(EColorComponent.Alpha);
+                    //sgNormalCasterSettings.SetOpacityChannel("normal");
+                    //sgNormalCasterSettings.SetDitherType(EDitherPatterns.FloydSteinberg);
+                    //sgNormalCasterSettings.SetFillMode(EAtlasFillMode.Interpolate);
+                    //sgNormalCasterSettings.SetDilation(10);
+                    //sgNormalCasterSettings.SetUseMultisampling(true);
+                    //sgNormalCasterSettings.SetOutputPixelFormat(EPixelFormat.R8G8B8A8);
+                    //sgNormalCasterSettings.SetOutputSRGB(true);
+                    //sgNormalCasterSettings.SetOutputImageFileFormat(EImageOutputFormat.PNG);
+                    //sgNormalCasterSettings.SetBakeOpacityInAlpha(false);
+                    //sgNormalCasterSettings.SetSkipCastingIfNoInputChannel(false);
+                    //sgNormalCasterSettings.SetOutputOpacityType(EOpacityType.Opacity);
+
+
                     pipeline.AddMaterialCaster(sgDiffuseCaster, 0);
+                    //pipeline.AddMaterialCaster(sgNormalCaster, 0);
 
                     result = ExecuteSimplygonPipeline(simplygon, pipeline, sgScene, resultName);
                 }
@@ -836,6 +859,7 @@ namespace QuickVR.QuickLOD
                     Texture t = r.sharedMaterial.GetTexture(tName);
                     if (t != null)
                     {
+                        Debug.Log("TEXTURE NAME = " + tName);
                         AssetDatabase.MoveAsset(AssetDatabase.GetAssetPath(t), assetFolderPath + "/" + t.name + ".png");
                         AssetDatabase.Refresh();
                     }
