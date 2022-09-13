@@ -66,10 +66,10 @@ public static class QuickLODUtilsEditor
             assetFolderPath = AssetDatabase.GUIDToAssetPath(guid);
             AssetDatabase.Refresh();
 
-            Debug.Log(guid);
-            Debug.Log(parentFolder);
-            Debug.Log(folders[folders.Length - 1]);
-            Debug.Log("assetFolderPath = " + assetFolderPath);
+            //Debug.Log(guid);
+            //Debug.Log(parentFolder);
+            //Debug.Log(folders[folders.Length - 1]);
+            //Debug.Log("assetFolderPath = " + assetFolderPath);
         }
         else
         {

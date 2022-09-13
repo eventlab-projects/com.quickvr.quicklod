@@ -859,7 +859,7 @@ namespace QuickVR.QuickLOD
                     Texture t = r.sharedMaterial.GetTexture(tName);
                     if (t != null)
                     {
-                        Debug.Log("TEXTURE NAME = " + tName);
+                        //Debug.Log("TEXTURE NAME = " + tName);
                         AssetDatabase.MoveAsset(AssetDatabase.GetAssetPath(t), assetFolderPath + "/" + t.name + ".png");
                         AssetDatabase.Refresh();
                     }
