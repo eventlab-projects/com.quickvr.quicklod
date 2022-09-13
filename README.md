@@ -11,7 +11,7 @@ This work is funded by the European Research Council (ERC) Advanced Grant Moment
 
 First of all you need to install [__Simplygon__](https://www.simplygon.com/downloads#latest-releases) in your Unity project. Then locate _Simplygon's_ plugin for _Unity_ (by default it will be located at _C:\Program Files\Simplygon\\[VersionNumber]\Unity\bin_). 
 
-![](/Documentation~/img/install/00a.png)
+![](/Documentation~/img/install/00.png)
 
 Copy the file _Simplygon.Unity.EditorPlugin.dll_ in the _Assets_ folder of your _Unity_ project. 
 
