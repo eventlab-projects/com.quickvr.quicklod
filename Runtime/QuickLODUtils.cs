@@ -168,10 +168,14 @@ namespace QuickVR.QuickLOD
                 mSource.GetBlendShapeFrameVertices(bsID, 0, dVertices, dNormals, dTangents);
 
                 //The vertex displacement must take into account the scale of the original SkinnedMeshRenderer
-                Matrix4x4 m = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, rSource.transform.localScale);
+                //Matrix4x4 m = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, rSource.transform.localScale);
+                Matrix4x4 m = Matrix4x4.TRS(rSource.transform.localPosition, rSource.transform.localRotation, rSource.transform.localScale);
                 for (int i = 0; i < dVertices.Length; i++)
                 {
                     dVertices[i] = m.MultiplyPoint(dVertices[i]);
+                    //dNormals[i] = Vector3.zero;
+                    dNormals[i] = m.MultiplyVector(dNormals[i]);
+                    //dTangents[i] = m.MultiplyVector(dTangents[i]).normalized;
                 }
 
                 mBaked.AddBlendShapeFrame(bsName, 100, dVertices, dNormals, dTangents);

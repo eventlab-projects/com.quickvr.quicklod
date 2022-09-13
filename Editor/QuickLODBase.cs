@@ -128,9 +128,10 @@ namespace QuickVR.QuickLOD
         protected virtual QuickTriangleMesh[] ComputeClosestTriangles(Mesh[] mSources, Mesh mTarget)
         {
             QuickTriangleMesh[] closestTriangles = new QuickTriangleMesh[mTarget.vertexCount];
+            
             for (int j = 0; j < mTarget.vertexCount; j++)
             {
-                VertexData vData = new VertexData(mTarget.vertices[j], mTarget.normals[j], mTarget.colors32[j]);
+                VertexData vData = new VertexData(mTarget.vertices[j], mTarget.normals[j], mTarget.colors[j]);
                 QuickTriangleMesh t = GetClosestTriangle(vData, mSources);
                 closestTriangles[j] = t;
                 if (t == null)
@@ -165,7 +166,8 @@ namespace QuickVR.QuickLOD
             }
 
             //Create a copy of the original GameObject and replace the meshes by the simplified ones
-            GameObject go = UnityEngine.Object.Instantiate(goSource, Vector3.zero, Quaternion.identity);
+            GameObject go = UnityEngine.Object.Instantiate(goSource);
+            go.transform.ResetTransformation();
             go.name = goSource.name + "_MERGED";
 
             //Create a new list of RenderGroups that points to the Renderers of the cloned GameObject
@@ -184,7 +186,7 @@ namespace QuickVR.QuickLOD
                         {
                             //rGroup._renderers.Add(r);
                             rGroup._renderers.Add(r.Bake());
-                            
+
                             //ComputeConnectedRegions(r.GetMesh(), out List<Mesh> submeshes);
                             //foreach (Mesh m in submeshes)
                             //{
@@ -273,6 +275,7 @@ namespace QuickVR.QuickLOD
 
             go.transform.position = goSource.transform.position;
             go.transform.rotation = goSource.transform.rotation;
+            go.transform.localScale = goSource.transform.localScale;
 
             GameObject goResult = Export(goSource.name, go);
 
@@ -282,6 +285,8 @@ namespace QuickVR.QuickLOD
             AssetDatabase.Refresh();
 
             return goResult;
+
+            //return null;
         }
 
         protected virtual void ComputeConnectedRegions(Mesh m, out List<Mesh> result)
@@ -572,58 +577,94 @@ namespace QuickVR.QuickLOD
             return result;
         }
 
+        
         protected GameObject MergeMaterials(ISimplygon simplygon, List<GameObject> selectedGameObjects, int atlasResolution, string resultName)
         {
             GameObject result = null;
-            string exportTempDirectory = SimplygonUtils.GetNewTempDirectory();
-
-            using (spScene sgScene = SimplygonExporter.Export(simplygon, exportTempDirectory, selectedGameObjects))
-            using (spAggregationPipeline pipeline = simplygon.CreateAggregationPipeline())
-            using (spAggregationSettings pipelineSettings = pipeline.GetAggregationSettings())
+            if (selectedGameObjects.Count == 1)
             {
-                //Aggregation settings
-                pipelineSettings.SetMergeGeometries(true);
-                pipelineSettings.SetEnableGeometryCulling(false);
-                    
-                // Generates a mapping image which is used after the reduction to cast new materials to the new 
-                // reduced object. 
-                spMappingImageSettings sgMappingImageSettings = pipeline.GetMappingImageSettings();
-                sgMappingImageSettings.SetGenerateMappingImage(true);
-                sgMappingImageSettings.SetGenerateTexCoords(false);
-                sgMappingImageSettings.SetGenerateTangents(false);
-                sgMappingImageSettings.SetUseFullRetexturing(true);
-                sgMappingImageSettings.SetApplyNewMaterialIds(true);
-                sgMappingImageSettings.SetTexCoordGeneratorType(ETexcoordGeneratorType.ChartAggregator);
+                result = selectedGameObjects[0];
+            }
+            else
+            {
+                string exportTempDirectory = SimplygonUtils.GetNewTempDirectory();
 
-                spMappingImageOutputMaterialSettings sgOutputMaterialSettings = sgMappingImageSettings.GetOutputMaterialSettings(0);
-                // Setting the size of the output material for the mapping image. This will be the output size of the 
-                // textures when we do material casting in a later stage. 
-                sgOutputMaterialSettings.SetTextureWidth((uint)atlasResolution);
-                sgOutputMaterialSettings.SetTextureHeight((uint)atlasResolution);
+                using (spScene sgScene = SimplygonExporter.Export(simplygon, exportTempDirectory, selectedGameObjects))
+                using (spAggregationPipeline pipeline = simplygon.CreateAggregationPipeline())
+                using (spAggregationSettings pipelineSettings = pipeline.GetAggregationSettings())
+                {
+                    //Aggregation settings
+                    pipelineSettings.SetMergeGeometries(true);
+                    pipelineSettings.SetEnableGeometryCulling(false);
 
-                // Add diffuse material caster to pipeline. 
-                spColorCaster sgDiffuseCaster = simplygon.CreateColorCaster();
-                spColorCasterSettings sgDiffuseCasterSettings = sgDiffuseCaster.GetColorCasterSettings();
-                sgDiffuseCasterSettings.SetMaterialChannel("diffuseColor");
-                sgDiffuseCasterSettings.SetOpacityChannelComponent(EColorComponent.Alpha);
-                sgDiffuseCasterSettings.SetOpacityChannel("diffuseColor");
-                sgDiffuseCasterSettings.SetDitherType(EDitherPatterns.FloydSteinberg);
-                sgDiffuseCasterSettings.SetFillMode(EAtlasFillMode.Interpolate);
-                sgDiffuseCasterSettings.SetDilation(10);
-                sgDiffuseCasterSettings.SetUseMultisampling(true);
-                sgDiffuseCasterSettings.SetOutputPixelFormat(EPixelFormat.R8G8B8A8);
-                sgDiffuseCasterSettings.SetOutputSRGB(true);
-                sgDiffuseCasterSettings.SetOutputImageFileFormat(EImageOutputFormat.PNG);
-                sgDiffuseCasterSettings.SetBakeOpacityInAlpha(false);
-                sgDiffuseCasterSettings.SetSkipCastingIfNoInputChannel(false);
-                sgDiffuseCasterSettings.SetOutputOpacityType(EOpacityType.Opacity);
+                    // Generates a mapping image which is used after the reduction to cast new materials to the new 
+                    // reduced object. 
+                    spMappingImageSettings sgMappingImageSettings = pipeline.GetMappingImageSettings();
+                    sgMappingImageSettings.SetGenerateMappingImage(true);
+                    sgMappingImageSettings.SetGenerateTexCoords(false);
+                    sgMappingImageSettings.SetGenerateTangents(false);
+                    sgMappingImageSettings.SetUseFullRetexturing(true);
+                    sgMappingImageSettings.SetApplyNewMaterialIds(true);
+                    sgMappingImageSettings.SetTexCoordGeneratorType(ETexcoordGeneratorType.ChartAggregator);
 
-                pipeline.AddMaterialCaster(sgDiffuseCaster, 0);
+                    spMappingImageOutputMaterialSettings sgOutputMaterialSettings = sgMappingImageSettings.GetOutputMaterialSettings(0);
+                    // Setting the size of the output material for the mapping image. This will be the output size of the 
+                    // textures when we do material casting in a later stage. 
+                    sgOutputMaterialSettings.SetTextureWidth((uint)atlasResolution);
+                    sgOutputMaterialSettings.SetTextureHeight((uint)atlasResolution);
 
-                result = ExecuteSimplygonPipeline(simplygon, pipeline, sgScene, resultName);
+                    // Add diffuse material caster to pipeline. 
+                    spColorCaster sgDiffuseCaster = simplygon.CreateColorCaster();
+                    spColorCasterSettings sgDiffuseCasterSettings = sgDiffuseCaster.GetColorCasterSettings();
+                    sgDiffuseCasterSettings.SetMaterialChannel("diffuseColor");
+                    sgDiffuseCasterSettings.SetOpacityChannelComponent(EColorComponent.Alpha);
+                    sgDiffuseCasterSettings.SetOpacityChannel("diffuseColor");
+                    sgDiffuseCasterSettings.SetDitherType(EDitherPatterns.FloydSteinberg);
+                    sgDiffuseCasterSettings.SetFillMode(EAtlasFillMode.Interpolate);
+                    sgDiffuseCasterSettings.SetDilation(10);
+                    sgDiffuseCasterSettings.SetUseMultisampling(true);
+                    sgDiffuseCasterSettings.SetOutputPixelFormat(EPixelFormat.R8G8B8A8);
+                    sgDiffuseCasterSettings.SetOutputSRGB(true);
+                    sgDiffuseCasterSettings.SetOutputImageFileFormat(EImageOutputFormat.PNG);
+                    sgDiffuseCasterSettings.SetBakeOpacityInAlpha(false);
+                    sgDiffuseCasterSettings.SetSkipCastingIfNoInputChannel(false);
+                    sgDiffuseCasterSettings.SetOutputOpacityType(EOpacityType.Opacity);
+
+                    // Add the normal caster to pipeline. 
+                    //spNormalCaster sgNormalCaster = simplygon.CreateNormalCaster();
+                    //spNormalCasterSettings sgNormalCasterSettings = sgNormalCaster.GetNormalCasterSettings();
+                    //sgNorm
+
+                    //spColorCaster sgNormalCaster = simplygon.CreateColorCaster();
+                    //spColorCasterSettings sgNormalCasterSettings = sgNormalCaster.GetColorCasterSettings();
+                    //sgNormalCasterSettings.SetMaterialChannel("normal");
+                    //sgNormalCasterSettings.SetOpacityChannelComponent(EColorComponent.Alpha);
+                    //sgNormalCasterSettings.SetOpacityChannel("normal");
+                    //sgNormalCasterSettings.SetDitherType(EDitherPatterns.FloydSteinberg);
+                    //sgNormalCasterSettings.SetFillMode(EAtlasFillMode.Interpolate);
+                    //sgNormalCasterSettings.SetDilation(10);
+                    //sgNormalCasterSettings.SetUseMultisampling(true);
+                    //sgNormalCasterSettings.SetOutputPixelFormat(EPixelFormat.R8G8B8A8);
+                    //sgNormalCasterSettings.SetOutputSRGB(true);
+                    //sgNormalCasterSettings.SetOutputImageFileFormat(EImageOutputFormat.PNG);
+                    //sgNormalCasterSettings.SetBakeOpacityInAlpha(false);
+                    //sgNormalCasterSettings.SetSkipCastingIfNoInputChannel(false);
+                    //sgNormalCasterSettings.SetOutputOpacityType(EOpacityType.Opacity);
+
+
+                    pipeline.AddMaterialCaster(sgDiffuseCaster, 0);
+                    //pipeline.AddMaterialCaster(sgNormalCaster, 0);
+
+                    result = ExecuteSimplygonPipeline(simplygon, pipeline, sgScene, resultName);
+                }
             }
 
             return result;
+        }
+
+        protected virtual GameObject GenerateUVs(ISimplygon simplygon, spScene scene)
+        {
+            return null;
         }
 
         protected virtual GameObject ExecuteSimplygonPipeline(ISimplygon simplygon, spPipeline pipeline, spScene scene, string resultName)
@@ -665,6 +706,22 @@ namespace QuickVR.QuickLOD
             timeStart = Time.realtimeSinceStartup;
             TransferSkinning(rSources, rTarget, closestTriangles);
             Debug.Log("timeTransferSkinning = " + (Time.realtimeSinceStartup - timeStart).ToString("f3"));
+
+            //Transfer the BlendShapes
+            timeStart = Time.realtimeSinceStartup;
+            TransferBlendShapes(mSources, mTarget, closestTriangles);
+            Debug.Log("timeTransferBlendShapes = " + (Time.realtimeSinceStartup - timeStart).ToString("f3"));
+        }
+
+        public virtual void TransferBlendShapes(SkinnedMeshRenderer rSource, SkinnedMeshRenderer rTarget)
+        {
+            Mesh[] mSources = new Mesh[] { rSource.GetMesh() };
+            Mesh mTarget = rTarget.GetMesh();
+
+            //For each vertex in mTarget, compute its closest triangle in mSources
+            float timeStart = Time.realtimeSinceStartup;
+            QuickTriangleMesh[] closestTriangles = ComputeClosestTriangles(mSources, mTarget);
+            Debug.Log("timeComputeClosestTriangles = " + (Time.realtimeSinceStartup - timeStart).ToString("f3"));
 
             //Transfer the BlendShapes
             timeStart = Time.realtimeSinceStartup;
@@ -802,6 +859,7 @@ namespace QuickVR.QuickLOD
                     Texture t = r.sharedMaterial.GetTexture(tName);
                     if (t != null)
                     {
+                        //Debug.Log("TEXTURE NAME = " + tName);
                         AssetDatabase.MoveAsset(AssetDatabase.GetAssetPath(t), assetFolderPath + "/" + t.name + ".png");
                         AssetDatabase.Refresh();
                     }

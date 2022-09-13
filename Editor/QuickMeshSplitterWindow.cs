@@ -84,7 +84,7 @@ namespace QuickVR.QuickLOD
 
         #region CREATION AND DESTRUCTION
 
-        [MenuItem("QuickVR/QuickMeshSplitter")]
+        [MenuItem("QuickVR/QuickLOD/MeshSplitter")]
         static void Init()
         {
             // Get existing open window or if none, make a new one:
